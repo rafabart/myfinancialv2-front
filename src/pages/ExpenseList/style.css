@@ -1,0 +1,33 @@
+.info-border {
+    border: 1px solid #17A2B8;
+}
+
+.page-num {
+    max-width: 80px;    
+    border: 1px solid #17A2B8;
+    color: #17A2B8;
+    text-align: center;
+    font-weight: bold;
+}
+
+.arrow {
+    width: 0;
+    height: 0;
+    float: right;
+    margin-top: 5px;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    display: inline-block;
+}
+
+.arrow-up {
+    border-bottom: 10px solid white;
+}
+
+.arrow-down {
+    border-top: 10px solid white;
+}
+
+.info-modal .modal-content {
+    background: #d3d3d3;
+}
