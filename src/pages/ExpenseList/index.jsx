@@ -10,9 +10,6 @@ import {
     Button,
     ButtonGroup,
     Col,
-    FormControl,
-    InputGroup,
-    Modal,
     Row,
     Table,
 } from "react-bootstrap";
@@ -20,16 +17,13 @@ import {
     faList,
     faTrash,
     faEdit,
-    faStepBackward,
-    faFastBackward,
-    faStepForward,
-    faFastForward,
-    faSearch,
-    faTimes,
     faPlusSquare,
 } from "@fortawesome/free-solid-svg-icons";
 
 import Datepicker from "../../components/Datepicker";
+import ModalCustom from "../../components/ModalCustom";
+import Pagination from "../../components/Pagination";
+import SearchInput from "../../components/SearchInput";
 
 import ExpenseService from "../../services/expenseService";
 
@@ -78,10 +72,10 @@ export default class ExpenseList extends Component {
             )
             .then((response) => {
                 this.setState({
-                    expenses: response["data"].content,
-                    totalPages: response["data"].totalPages,
-                    totalElements: response["data"].totalElements,
-                    currentPage: response["data"].number + 1,
+                    expenses: response.data.content,
+                    totalPages: response.data.totalPages,
+                    totalElements: response.data.totalElements,
+                    currentPage: response.data.number + 1,
                 });
             });
     };
@@ -94,20 +88,19 @@ export default class ExpenseList extends Component {
             .deleteById(id)
             .then(() => {
                 this.setState({
-                    expenses: this.state.expenses.filter((expense) => expense.id !== id),
+                    expenses: this.state.expenses.filter((expense) => expense.id !== id)
                 });
             })
             .catch((warning) => {
                 this.setState({
                     showAlert: true,
                     messageAlert: warning.response.data.message,
+                    expenses: this.state.expenses.filter((expense) => expense.id !== id)
                 });
                 setTimeout(() => this.setState({ showAlert: false }), 4000);
             });
 
-        this.setState({
-            showModal: false,
-        });
+        this.handleClose();
     };
 
 
@@ -122,7 +115,9 @@ export default class ExpenseList extends Component {
 
 
     changePage = (event) => {
-        let targetPage = parseInt(event.target.value);
+        event.target.blur();
+
+        let targetPage = event.target.value > this.state.totalPages ? 0 : event.target.value;
 
         this.searchData(targetPage);
 
@@ -137,7 +132,7 @@ export default class ExpenseList extends Component {
 
         if (this.state.currentPage > firstPage) {
             this.searchData(firstPage);
-        }
+        };
     };
 
 
@@ -146,7 +141,7 @@ export default class ExpenseList extends Component {
 
         if (this.state.currentPage > prevPage) {
             this.searchData(this.state.currentPage - prevPage);
-        }
+        };
     };
 
 
@@ -157,17 +152,16 @@ export default class ExpenseList extends Component {
 
         if (this.state.currentPage < condition) {
             this.searchData(condition);
-        }
+        };
     };
 
 
     nextPage = () => {
-        if (
-            this.state.currentPage <
+        if (this.state.currentPage <
             Math.ceil(this.state.totalElements / this.state.expensesPerPage)
         ) {
             this.searchData(this.state.currentPage + 1);
-        }
+        };
     };
 
 
@@ -178,8 +172,8 @@ export default class ExpenseList extends Component {
     };
 
 
-    cancelSearch = () => {
-        this.setState({ search: "" });
+    cancelSearch = async () => {
+        await this.setState({ search: "" });
         this.searchData(this.state.currentPage);
     };
 
@@ -212,6 +206,11 @@ export default class ExpenseList extends Component {
             month: month
         });
         this.searchData(this.state.currentPage);
+    };
+
+
+    handleFocus = (event) => {
+        event.target.select();
     };
 
 
@@ -251,7 +250,7 @@ export default class ExpenseList extends Component {
                                     handleSearchByMonth={this.handleSearchByMonth}
                                     year={year}
                                     handleSearchByYear={this.handleSearchByYear}
-                                ></Datepicker>
+                                />
                             </Col>
                             <Col>
                                 <Row>
@@ -260,35 +259,13 @@ export default class ExpenseList extends Component {
                                             <FontAwesomeIcon icon={faPlusSquare} />Novo
                                         </Link>
                                     </Col>
-                                    <Col width="1000">
-                                        <InputGroup size="sm">
-                                            <FormControl
-                                                placeholder="Pesquisar"
-                                                name="search"
-                                                value={search}
-                                                className={"info-border bg-dark text-white"}
-                                                onChange={this.searchChange}
-                                            />
-
-                                            <InputGroup.Append>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline-info"
-                                                    type="button"
-                                                    onClick={this.searchData}
-                                                >
-                                                    <FontAwesomeIcon icon={faSearch} />
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline-info"
-                                                    type="button"
-                                                    onClick={this.cancelSearch}
-                                                >
-                                                    <FontAwesomeIcon icon={faTimes} />
-                                                </Button>
-                                            </InputGroup.Append>
-                                        </InputGroup>
+                                    <Col>
+                                        <SearchInput
+                                            value={search}
+                                            onChange={this.searchChange}
+                                            onClickSearchData={this.searchData}
+                                            onClickCancelSearch={this.cancelSearch}
+                                        />                                       
                                     </Col>
                                 </Row>
                             </Col>
@@ -349,7 +326,7 @@ export default class ExpenseList extends Component {
 
                                 {expenses.length === 0 ? (
                                     <tr align="center">
-                                        <td colSpan={6}>Sem categorias.</td>
+                                        <td colSpan={6}>Sem despesas.</td>
                                     </tr>
                                 ) : (
                                         expenses.map((expense) => (
@@ -387,85 +364,29 @@ export default class ExpenseList extends Component {
 
                     {expenses.length > 0 ? (
                         <Card.Footer>
-                            <Row>
-                                <Col className="float-left">
-                                    Página {currentPage} de {totalPages}
-                                </Col>
-                                <Col xs="auto">
-                                    <InputGroup size="sm">
-                                        <InputGroup.Prepend>
-                                            <Button
-                                                type="button"
-                                                variant="outline-info"
-                                                disabled={currentPage === 1 ? true : false}
-                                                onClick={this.firstPage}
-                                            >
-                                                <FontAwesomeIcon icon={faFastBackward} />
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant="outline-info"
-                                                disabled={currentPage === 1 ? true : false}
-                                                onClick={this.prevPage}
-                                            >
-                                                <FontAwesomeIcon icon={faStepBackward} />
-                                            </Button>
-                                        </InputGroup.Prepend>
-                                        <FormControl
-                                            inputMode="numeric"
-                                            className={"bg-dark page-num"}
-                                            name="currentPage"
-                                            value={currentPage}
-                                            onChange={this.changePage}
-                                            autoComplete="off"
-                                        />
-                                        <InputGroup.Append>
-                                            <Button
-                                                type="button"
-                                                variant="outline-info"
-                                                disabled={currentPage === totalPages ? true : false}
-                                                onClick={this.nextPage}
-                                            >
-                                                <FontAwesomeIcon icon={faStepForward} />
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant="outline-info"
-                                                disabled={currentPage === totalPages ? true : false}
-                                                onClick={this.lastPage}
-                                            >
-                                                <FontAwesomeIcon icon={faFastForward} />
-                                            </Button>
-                                        </InputGroup.Append>
-                                    </InputGroup>
-                                </Col>
-                            </Row>
+
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onFocus={this.handleFocus}
+                                onClickChangePage={this.changePage}
+                                onClickFirstPage={this.firstPage}
+                                onClickPrevPage={this.prevPage}
+                                onClickNextPage={this.nextPage}
+                                onClickLastPage={this.lastPage}
+                            />
+
                         </Card.Footer>
                     ) : null}
                 </Card>
-                <Modal
-                    dialogClassName="info-modal"
+
+                <ModalCustom
                     show={showModal}
                     onHide={this.handleClose}
-                    backdrop="static"
-                >
-                    <Modal.Header closeButton>
-                        <Modal.Title>Excluir Categoria</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>Deseja excluir a categoria?</Modal.Body>
-                    <Modal.Footer>
-                        <Button size="sm" variant="outline-info" onClick={this.handleClose}>
-                            Cancelar
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant="outline-danger"
-                            onClick={this.deleteExpense}
-                        >
-                            Excluir
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
+                    title="Despesas"
+                    onClickCancel={this.handleClose}
+                    onClickExclude={this.deleteExpense} />
+
             </div>
         );
     }

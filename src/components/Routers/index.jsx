@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 
 import { Container, Row, Col } from 'react-bootstrap';
@@ -9,7 +10,7 @@ import ExpenseList from "../../pages/ExpenseList";
 import NavigationBar from "../NavigationBar";
 import Welcome from "../Welcome";
 
-export default function Routers(props) {
+export default function Routers() {
 
     const heading = "Bem-vindo ao myFinancial";
     const desc = "Cuidado com as pequenas despesas, um pequeno vazamento afundará um grande navio.";

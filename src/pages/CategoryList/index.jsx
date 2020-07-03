@@ -70,10 +70,10 @@ export default class CategoryList extends Component {
             )
             .then((response) => {
                 this.setState({
-                    categories: response["data"].content,
-                    totalPages: response["data"].totalPages,
-                    totalElements: response["data"].totalElements,
-                    currentPage: response["data"].number + 1,
+                    categories: response.data.content,
+                    totalPages: response.data.totalPages,
+                    totalElements: response.data.totalElements,
+                    currentPage: response.data.number + 1,
                 });
             });
     };
@@ -86,22 +86,19 @@ export default class CategoryList extends Component {
             .deleteById(id)
             .then(() => {
                 this.setState({
-                    categories: this.state.categories.filter(
-                        (category) => category.id !== id
-                    ),
+                    categories: this.state.categories.filter((category) => category.id !== id)
                 });
             })
             .catch((warning) => {
                 this.setState({
                     showAlert: true,
                     messageAlert: warning.response.data.message,
+                    categories: this.state.categories.filter((category) => category.id !== id)
                 });
                 setTimeout(() => this.setState({ showAlert: false }), 4000);
             });
 
-        this.setState({
-            showModal: false,
-        });
+        this.handleClose();
     };
 
 
@@ -130,7 +127,7 @@ export default class CategoryList extends Component {
 
         if (this.state.currentPage > firstPage) {
             this.searchData(firstPage);
-        }
+        };
     };
 
 
@@ -150,17 +147,16 @@ export default class CategoryList extends Component {
 
         if (this.state.currentPage < condition) {
             this.searchData(condition);
-        }
+        };
     };
 
 
     nextPage = () => {
-        if (
-            this.state.currentPage <
+        if (this.state.currentPage <
             Math.ceil(this.state.totalElements / this.state.categoriesPerPage)
         ) {
             this.searchData(this.state.currentPage + 1);
-        }
+        };
     };
 
 
